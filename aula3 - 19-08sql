@@ -1,0 +1,126 @@
+set serveroutput on --ativar o servidor de print(saida de dados em tela)
+set verify off --desabilitar retorno old new
+
+
+DROP TABLE T_ALUNINHO ;
+
+CREATE TABLE T_ALUNINHO(
+    RA  CHAR(9),
+    NOME VARCHAR2(60),
+    CONSTRAINT ALUNO_PK PRIMARY KEY(RA)
+);
+
+
+INSERT INTO T_ALUNINHO(ra, nome) 
+VALUES ('111222333', 'Antonio Alves');
+
+INSERT INTO T_ALUNINHO(ra, nome) 
+VALUES ('222333444', 'Beatriz Bernardes');
+
+INSERT INTO T_ALUNINHO(ra, nome) 
+VALUES ('333444555', 'Claudia Cardoso');
+
+
+
+-- BUSCANDO UM NOME A PARTIR DE UM RA
+DECLARE 
+    V_RA CHAR(9) := '333444555';
+    V_NOME VARCHAR(50);
+    
+BEGIN
+    SELECT NOME INTO V_NOME FROM T_ALUNINHO WHERE RA = V_RA;
+    
+    DBMS_OUTPUT.PUT_LINE('O nome do aluno é: ' || V_NOME);
+END;
+
+
+
+
+-- INSERINDO UM NOVO ALUNO
+DECLARE 
+    V_RA CHAR(9) := '444555666';
+    V_NOME VARCHAR(50) := 'Daniela Dorneles';
+    
+BEGIN
+    INSERT INTO T_ALUNINHO (RA, NOME) VALUES (V_RA, V_NOME);
+END;
+
+
+-- ALTERANDO O NOME DO ALUNO COM UPDATE PELO RA
+DECLARE 
+    V_RA CHAR(9) := '111222333';
+    V_NOME VARCHAR(50) := 'Antonio Rodrigues';
+    
+BEGIN
+    UPDATE ALUNO SET NOME = V_NOME WHERE RA = V_RA;
+END;
+
+
+
+DECLARE 
+    V_RA CHAR(9) := '444555666';
+BEGIN
+   DELETE FROM T_ALUNINHO WHERE RA = V_RA;
+END;
+
+---------------------------------------------------------------------------------------
+
+
+drop table nota cascade constraints;
+
+CREATE TABLE nota(
+    n1 number(3,1),
+    n2 number(3,1),
+    n3 number(3,1),
+    n4 number(3,1),
+    media number(3,1),
+    num_faltas number(3),
+    c_hora number(3),
+    situacao varchar(30),
+    rm number(3),
+    cd_disc number(2)
+)
+
+
+BEGIN 
+    insert into nota values (10, 10, 9, 10, null, 0, 100, null, 1, 1); -- aprovado
+    insert into nota values (10, 10, 10, 9, null, 100, 100, null, 1, 2); -- reprovado por faltas
+    insert into nota values (5, 4, 5, 5,    null, 10, 100, null, 1, 3); --  recuperação
+    insert into nota values (4 ,4, 5, 5,    null, 0, 100, null, 1, 4); -- reprovado direto
+    insert into nota values (1, 2, 2, 2,    null, 0, 100, null, 1, 5); -- reprovado por nota
+    commit;
+END;
+
+
+DECLARE
+    v_n1 number(3,1);
+    v_n2 v_n1%type;
+    v_n3 v_n1%type;
+    v_n4 v_n1%type;
+    v_media v_n1%type;
+    v_faltas number(3);
+    v_choras number(3);
+    v_disc number (2) := &codigo_disciplina;
+    v_situa varchar (30);
+    
+BEGIN
+    -- realizando a carga de dados - tabela para bloco
+    SELECT n1, n2, n3, n4, num_faltas, c_hora, cd_disc
+    into v_n1, v_n2 ,v_n3, v_n4, v_faltas, v_choras, v_disc  
+    from nota where cd_disc = v_disc;
+    
+    -- dbms_output.put_line (v_disc || ' - ' ||v_n1|| ' - ' ||v_n2|| ' - ' ||v_n3|| ' - ' || v_n4); 
+    -- analisando as notas, descartar a menor e calcular a média    
+    
+    -- Encontrando a menor nota
+    v_min := LEAST(v_n1, v_n2, v_n3, v_n4);
+    
+    -- Calculando a média das três maiores notas
+    v_media := (v_n1 + v_n2 + v_n3 + v_n4 - v_min) / 3;
+    
+    -- Exibindo a média calculada
+    DBMS_OUTPUT.PUT_LINE('Média das três maiores notas: ' || v_media);
+END;
+
+
+
